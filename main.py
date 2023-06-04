@@ -1,9 +1,8 @@
 from flask import Flask
 from flask_wtf.csrf import validate_csrf
 import openai
-import json
 from flask import Flask,request,render_template,jsonify
-openai.api_key="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"
+openai.api_key="Your_API_KEY"
 app = Flask(  __name__,template_folder='templates',static_folder='static')
 def response_writer_main(prompt):
     try:
