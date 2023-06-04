@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <style>
+        p,span {
+            font-family: 'Roboto', sans-serif;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Anazlyzer</title>
+</head>
+
+<body class="bg-gray-800">
+    <header class="bg-gray-700 h-16 sticky top-0 flex justify-center items-center">
+        <h1 class="text-xs md:text-xl font-semibold text-gray-300 py-6">WellCome To AI Review Anazlyzer</h1>
+    </header>
+    <div class="w-full flex justify-center flex-col space-y-8 my-6 md:my-24">
+        <form id="form">
+            <div class="w-full px-4 flex items-center justify-center">
+                <input required oninput="autoOption()" autocomplete="off"
+                    placeholder="Paste your customer review here..." type="text" name="review"
+                    class="border-none outline-none rounded p-1 w-full mx-2 px-2 py-2 md:py-3 bg-gray-700 text-white">
+                <button type="submit"
+                    class="bg-green-500 text-white p-2 rounded-sm px-4 text-sm font-bold">Submit</button>
+            </div>
+            <div id="autoOption1" class="text-white flex flex-col justify-center items-start mt-8 mx-6 space-y-1">
+            </div>
+        </form>
+        <div id="response" class="w-full">
+        </div>
+    </div>
+    <footer class="fixed bottom-0 w-full py-2">
+        <div class="flex justify-center items-center"><span class="text-gray-400 text-xs text-center">
+                Maybe our AI system generates inaccurate response </span></div>
+    </footer>
+    <script>
+        const responsePara = document.getElementById("response")
+const button = document.getElementsByTagName("button")[0]
+const form = document.getElementById("form")
+let task = ""
+const autoOption1 = document.getElementById("autoOption1")
+function autoOption() {
+    autoOption1.innerHTML = `
+    <div class="flex space-x-2 text-gray-400"><input class="options" type="radio" name="radioGroup" value="Review Response"><span
+        class="text-xs px-2">Generate Review Response</span></div>
+        <div class="flex space-x-2 text-gray-400"><input type="radio" class="options"  name="radioGroup" value="Review Summary"><span class="text-xs px-2">Generate Review
+            Summary</span></div>
+            <div class="flex space-x-2 text-gray-400"><input type="radio" class="options"  name="radioGroup" value="Review Sentiment"><span class="text-xs px-2">Generate Review
+                Sentiment</span></div>`
+    const options = document.querySelectorAll(".options")
+    options.forEach(element => {
+        element.addEventListener("click", function () {
+            task = this.value
+        })
+    })
+    options[0].click()
+};
+
+const AIwriter = ((response) => {
+    console.log(response)
+    button.removeAttribute("disabled")
+    responsePara.innerHTML = ` <div class="w-full bg-gray-700 text-gray-400 px-4 py-4 flex flex-col items-center justify-center space-y-6">
+            <span class="w-full text-sm md:text-base font-semibold text-white">Task Title: (${task})</span>
+            <p id="myText" class="w-full text-sm md:text-base">${response}
+            </p>
+            <button type="submit" onclick="copyContent()" class="bg-green-500 text-white p-2 rounded-sm px-4 text-sm font-bold">Copy</button></div>`
+})
+const loading = (() => {
+    button.setAttribute("disabled", true)
+    responsePara.innerHTML = `<div class="w-full bg-gray-700 py-4 text-center">
+<span class="text-white">Please wait...</span></div>`
+})
+const NetWorkError = (() => {
+    button.removeAttribute("disabled")
+    responsePara.innerHTML = `<div class="w-full bg-gray-700 py-4 text-center"><span class="text-center text-red-500">There is some error!</div></span>`
+})
+form.addEventListener("submit", (event) => {
+    event.preventDefault()
+    loading()
+    formdata = new FormData(form)
+    fetch("/", {
+        method: "POST",body: formdata
+    }).then((response) => {
+        if (response.status === 200) {
+            return response.json()
+        }
+    }).then((response) => {
+        AIwriter(response)
+    }).catch(() => {
+        NetWorkError()
+    })
+})
+const copyContent = async () => {
+let text = document.getElementById('myText').innerHTML;
+  try {
+    await navigator.clipboard.writeText(text);
+    console.log('Content copied to clipboard');
+  } catch (err) {
+    console.error('Failed to copy: ', err);
+  }
+}
+    </script>
+</body>
+</html>
